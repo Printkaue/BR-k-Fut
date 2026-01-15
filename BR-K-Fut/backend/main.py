@@ -14,14 +14,17 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_
 
 
 #requiciçoes
-@app.route("/times", methods=["GET"])
-def gettimes():
-    pass
 
 @app.route("/rodada", methods=["GET"])
 def getgames():
-    rodata = request.args.get("n", type=int)
-    res = supabase.table("Resultados").select("*").eq("rodata", rodata).execute()
+    rodata = request.args.get("n", type=str)
+    res = supabase.table("Resultados").select("*").or_(f"mandante.eq.{rodata}, visitante.eq.{rodata}").execute()
+
+    if not res.data:
+        return jsonify({
+            "status": "erro",
+            "msg": "Não achamos nem um jogo para esse time"
+        })
 
     return jsonify(res.data)
 
